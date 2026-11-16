@@ -1,235 +1,266 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <ctype.h>
 
 int main() {
-    srand(time(NULL)); // Rastgele sayi uretimi[span_0](start_span)[span_0](end_span)
+    srand(time(NULL));
 
-    // Temel degiskenler[span_1](start_span)[span_1](end_span)
-    int can = 100, enerji = 100, o2 = 100;
-    int su = 0, parca = 0, hasar = 0, kilit = 0;
-    int gun = 1, tur = 0, firtinaTur = 5, zorlukCarpan = 1;
-    char secim;
-    int basla = 0;
+    int can = 100, enerji = 100, o2 = 100, su = 20;
+    int parca = 3, hasar = 0, kilit = 0, gun = 1;
+    int firtinaTur = 3, gecerli = 0;
+    char zorluk, komut;
 
-    printf("--- MARS YASAM DESTEK SIMULATORU ---\n");
+    printf("=== MARS KOLONISI YASAM DESTEK SIMULATORU ===\n");
 
-    // Zorluk secimi (SWITCH-CASE + DO-WHILE)[span_2](start_span)[span_2](end_span)
+    // Zorluk secimi (do-while ve switch-case)
     do {
-        printf("Zorluk (K: Kolay, N: Normal, Z: Zor): ");
-        scanf(" %c", &secim);
+        printf("Zorluk Secin (K: Kolay, N: Normal, Z: Zor): ");
+        scanf(" %c", &zorluk);
+        zorluk = toupper(zorluk);
 
-        switch (secim) {
-            case 'k': case 'K':
-                su = 30; parca = 10; hasar = 10; firtinaTur = 3; zorlukCarpan = 1; basla = 1;
+        switch (zorluk) {
+            case 'K':
+                can = 120; enerji = 120; o2 = 120; su = 30; firtinaTur = 2;
+                gecerli = 1;
                 break;
-            case 'n': case 'N':
-                su = 20; parca = 6; hasar = 20; firtinaTur = 5; zorlukCarpan = 2; basla = 1;
+            case 'N':
+                can = 100; enerji = 100; o2 = 100; su = 20; firtinaTur = 3;
+                gecerli = 1;
                 break;
-            case 'z': case 'Z':
-                su = 10; parca = 3; hasar = 35; firtinaTur = 7; zorlukCarpan = 3; basla = 1;
+            case 'Z':
+                can = 80; enerji = 80; o2 = 80; su = 15; firtinaTur = 4;
+                gecerli = 1;
                 break;
             default:
-                printf("Hatali secim! Tekrar girin.\n");
+                printf("Gecersiz secim! Tekrar deneyin.\n");
         }
-    } while (!basla);
+    } while (!gecerli);
 
-    char cmd;
-    int oyun = 1;
-
-    // Ana oyun dongusu[span_3](start_span)[span_3](end_span)
+    // Ana oyun dongusu
     do {
-        int turSay = 0;
-        printf("\n[Gun:%d Tur:%d] Can:%d Enerji:%d O2:%d Su:%d Parca:%d Hasar:%d\n",
-               gun, tur, can, enerji, o2, su, parca, hasar);
-        printf("Komut (G, O, T, D, U, K, H, Q): ");
-        scanf(" %c", &cmd);
+        printf("\n--- GUN %d ---\n", gun);
+        printf("Komutlar: [D]urum [G]Kesif [O]ksijen [T]amir [H]ava Kilidi [K]um Firtinasi [U]yu [Q]Cikis\n");
+        printf("Seciminiz: ");
+        scanf(" %c", &komut);
+        komut = toupper(komut);
 
-        switch (cmd) {
-            case 'g': case 'G': { // Kesif[span_4](start_span)[span_4](end_span)[span_5](start_span)[span_5](end_span)
-                if (enerji < 15) { printf("Yetersiz enerji!\n"); break; }
-                enerji -= 15; o2 -= 10; turSay = 1;
+        int turGecti = 0;
 
-                int zar = rand() % 100;
-                int esik = (enerji > 40 && o2 > 30) ? 60 : 35;
-                printf("Zar: %d / Esik: %d -> ", zar, esik);
-
-                if (zar < esik) { su += 8; printf("BASARILI (+8 Su)\n"); }
-                else if (zar < esik + 25) { parca += 2; printf("BASARILI (+2 Parca)\n"); }
-                else { printf("BASARISIZ (Bos donuldu)\n"); }
-
-                int kaza = rand() % 100;
-                printf("Kaza Zari: %d / Esik: 10 -> ", kaza);
-                if (kaza < 10 || hasar > 70) { can -= 12; printf("BASARISIZ (-12 Can)\n"); }
-                else { printf("BASARILI (Guvenli)\n"); }
+        switch (komut) {
+            case 'D':
+                printf("\n[DURUM RAPORU]\n");
+                printf("Can: %d | Enerji: %d | Oksijen: %d | Su: %d\n", can, enerji, o2, su);
+                printf("Yedek Parca: %d | Hasar: %d | Hava Kilidi: %s\n", parca, hasar, kilit ? "MUHURLU" : "ACIK");
                 break;
-            }
 
-            case 'o': case 'O': { // Oksijen uretimi[span_6](start_span)[span_6](end_span)[span_7](start_span)[span_7](end_span)
-                if (enerji < 10) { printf("Yetersiz enerji!\n"); break; }
-                int miktar;
-                printf("Kullanilacak su (Mevcut %d): ", su);
-                scanf("%d", &miktar);
-
-                if (miktar > su || miktar < 2) { printf("Gecersiz su miktari!\n"); break; }
-
-                int artik = miktar % 2; // Mod ile tek/cift kontrolu[span_8](start_span)[span_8](end_span)
-                int islenen = miktar - artik;
-                su -= islenen;
-                enerji -= 10;
-                o2 += (islenen / 2) * 3;
-                turSay = 1;
-
-                if (artik == 1) printf("1 birim su artik olarak depoda kaldi.\n");
-                printf("+%d O2 uretildi.\n", (islenen / 2) * 3);
-                break;
-            }
-
-            case 't': case 'T': { // Tamir[span_9](start_span)[span_9](end_span)[span_10](start_span)[span_10](end_span)
-                if (enerji < 10 || parca <= 0 || hasar == 0) {
-                    printf("Tamir yapilamiyor (Enerji/Parca yetersiz veya hasar yok).\n");
+            case 'G': { // Kesfe cikma
+                if (enerji < 15) {
+                    printf("Yetersiz enerji! (En az 15 gerekli)\n");
                     break;
                 }
-                if (hasar <= 30) {
-                    parca -= 1; hasar -= 15; enerji -= 10; turSay = 1;
-                    printf("Hafif hasar onarildi (-15 Hasar).\n");
-                } else if (hasar <= 70 && parca >= 2) {
-                    parca -= 2; hasar -= 25; enerji -= 10; turSay = 1;
-                    printf("Orta hasar onarildi (-25 Hasar).\n");
-                } else if (hasar > 70 && parca >= 3) {
-                    parca -= 3; hasar -= 35; enerji -= 10; turSay = 1;
-                    printf("Agir hasar onarildi (-35 Hasar).\n");
+                enerji -= 15;
+                turGecti = 1;
+
+                int zar = rand() % 100;
+                int esik = (zorluk == 'K') ? 40 : ((zorluk == 'N') ? 50 : 60);
+                printf("Kesif Zari: %d / Esik: %d -> ", zar, esik);
+
+                if (zar >= esik && hasar < 50) {
+                    int bulunanSu = (rand() % 5) + 3;
+                    int bulunanParca = (rand() % 2) + 1;
+                    su += bulunanSu;
+                    parca += bulunanParca;
+                    printf("BASARILI! +%d Su ve +%d Yedek Parca bulundu.\n", bulunanSu, bulunanParca);
                 } else {
-                    printf("Bu hasar seviyesi icin yedek parca yetersiz!\n");
+                    int kazaHasar = (rand() % 10) + 5;
+                    hasar += kazaHasar;
+                    can -= 5;
+                    printf("BASARISIZ! Firtinaya yakalandiniz. +%d Hasar, -5 Can.\n", kazaHasar);
                 }
                 break;
             }
 
-            case 'd': case 'D': { // Durum raporu (Tur harcamaz)[span_11](start_span)[span_11](end_span)[span_12](start_span)[span_12](end_span)[span_13](start_span)[span_13](end_span)
-                printf("Kilit: %s | ", kilit ? "MUHURLU" : "ACIK");
-                if (o2 < 25) printf("[KRITIK O2] ");
-                if (can < 30) printf("[KRITIK CAN] ");
-                if (hasar > 70) printf("[KRITIK HASAR] ");
-                if (o2 >= 25 && can >= 30 && hasar <= 70 && enerji >= 20)
-                    printf("TUM SISTEMLER NORMAL");
-                printf("\n");
-                break;
-            }
+            case 'O': { // Oksijen uretimi (mod operatoru)
+                if (enerji < 10 || su < 2) {
+                    printf("Yetersiz enerji veya su! (En az 10 Enerji ve 2 Su gerekli)\n");
+                    break;
+                }
+                int miktar;
+                printf("Kullanilacak su miktari (Mevcut: %d): ", su);
+                scanf("%d", &miktar);
 
-            case 'u': case 'U': { // Dinlen[span_14](start_span)[span_14](end_span)[span_15](start_span)[span_15](end_span)
-                enerji += 25; o2 -= 8; turSay = 1;
-                if (o2 < 20) {
-                    can -= 10;
-                    printf("Dusuk O2 nedeniyle uyurken can kaybettin (-10 Can)!\n");
+                if (miktar < 2 || miktar > su) {
+                    printf("Gecersiz su miktari!\n");
+                    break;
+                }
+
+                enerji -= 10;
+                turGecti = 1;
+
+                int kalan = miktar % 2;
+                int islenen = miktar - kalan;
+                su -= islenen;
+                int uretilenO2 = (islenen / 2) * 12;
+                o2 += uretilenO2;
+
+                if (kalan == 1) {
+                    printf("Tek sayi girildi: %d birim su islendi (+%d O2), 1 birim su depoda kaldi.\n", islenen, uretilenO2);
                 } else {
-                    can += 15;
-                    printf("Dinlendin (+25 Enerji, +15 Can).\n");
+                    printf("%d birim su islendi (+%d O2).\n", islenen, uretilenO2);
                 }
                 break;
             }
 
-            case 'k': case 'K': { // Kum firtinasi (FOR)[span_16](start_span)[span_16](end_span)[span_17](start_span)[span_17](end_span)
-                if (enerji < 10) { printf("Yetersiz enerji!\n"); break; }
-                enerji -= 10; turSay = 1;
-                int hasarTur = 0, kayipCan = 0, kayipO2 = 0;
+            case 'T': { // Tamir
+                if (hasar == 0) {
+                    printf("Us hasarsiz, tamire gerek yok.\n");
+                    break;
+                }
+                if (parca < 1 || enerji < 10) {
+                    printf("Yetersiz yedek parca veya enerji!\n");
+                    break;
+                }
+                parca -= 1;
+                enerji -= 10;
+                turGecti = 1;
+                hasar -= 20;
+                if (hasar < 0) hasar = 0;
+                printf("Tamir tamamlandi! Guncel hasar: %d\n", hasar);
+                break;
+            }
 
-                for (int i = 1; i <= firtinaTur; i++) {
-                    int kat = (i % 2 == 0) ? 2 : 1; // Cift turlarda 2 kat hasar[span_18](start_span)[span_18](end_span)
+            case 'H': { // Hava kilidi sifresi (do-while 3 hak)
+                if (kilit == 1) {
+                    printf("Hava kilidi zaten muhurlu.\n");
+                    break;
+                }
+                char ipucu = 'A' + ((gun - 1) % 24);
+                char dogruSifre = ipucu + 1;
+                char tahmin;
+                int hak = 3, basari = 0;
+
+                printf("Hava Kilidi Guvenlik Sistemi (Ipucu: '%c' harfinden sonraki harf)\n", ipucu);
+                do {
+                    printf("Sifreyi girin (Kalan hak %d): ", hak);
+                    scanf(" %c", &tahmin);
+                    tahmin = toupper(tahmin);
+
+                    if (tahmin == dogruSifre) {
+                        kilit = 1;
+                        basari = 1;
+                        printf("Sifre dogru! Hava kilidi muhurlendi.\n");
+                    } else {
+                        hak--;
+                        printf("Yanlis sifre!\n");
+                    }
+                } while (hak > 0 && !basari);
+
+                turGecti = 1;
+                break;
+            }
+
+            case 'K': { // Kum firtinasi (for, continue, break)
+                if (enerji < 10) {
+                    printf("Yetersiz enerji!\n");
+                    break;
+                }
+                enerji -= 10;
+                turGecti = 1;
+
+                int i, hasarTur = 0, kayipCan = 0, kayipO2 = 0;
+
+                for (i = 1; i <= firtinaTur; i++) {
+                    int kat = (i % 2 == 0) ? 2 : 1;
                     int zar = rand() % 100;
-                    printf("Firtina %d -> Zar: %d / Esik: 45 -> ", i, zar);
+                    printf("Firtina Tur %d -> Zar: %d / Esik: 45 -> ", i, zar);
 
-                    if (zar < 45) { printf("BASARILI\n"); continue; }
+                    if (zar < 45) {
+                        printf("ATLATILDI\n");
+                        continue;
+                    }
 
-                    printf("BASARISIZ -> ");
+                    printf("HASAR ALINDI -> ");
                     hasarTur++;
                     int tip = rand() % 3;
 
                     if (tip == 0) {
-                        if (kilit == 1) { printf("Kilit muhurlu, O2 sizintisi atlandi.\n"); continue; }
-                        int kayip = 5 * kat * zorlukCarpan;
-                        o2 -= kayip; kayipO2 += kayip;
-                        printf("-%d O2\n", kayip);
+                        if (kilit == 1) {
+                            printf("Hava kilidi muhurlu oldugu icin O2 sizintisi engellendi!\n");
+                            continue;
+                        }
+                        int kayip = 6 * kat;
+                        o2 -= kayip;
+                        kayipO2 += kayip;
+                        printf("-%d Oksijen\n", kayip);
                     } else if (tip == 1) {
-                        hasar += 6 * kat * zorlukCarpan;
-                        printf("+%d Hasar\n", 6 * kat * zorlukCarpan);
-                    } else {
-                        int kayip = 5 * kat * zorlukCarpan;
-                        can -= kayip; kayipCan += kayip;
+                        int kayip = 5 * kat;
+                        can -= kayip;
+                        kayipCan += kayip;
                         printf("-%d Can\n", kayip);
+                    } else {
+                        int ekHasar = 8 * kat;
+                        hasar += ekHasar;
+                        printf("+%d Us Hasari\n", ekHasar);
                     }
 
-                    if (can <= 0 || o2 <= 0) break; // Deger sifirlanirsa cik[span_19](start_span)[span_19](end_span)
+                    if (hasar >= 80) {
+                        printf("KRITIK HASAR! Firtina simulasyonu acil durduruldu.\n");
+                        break;
+                    }
                 }
-                printf("Ozet -> Hasarli Tur:%d | Kayip Can:%d | Kayip O2:%d\n", hasarTur, kayipCan, kayipO2);
+
+                printf("Firtina Ozeti: %d tur hasar alindi (Toplam -%d Can, -%d O2)\n", hasarTur, kayipCan, kayipO2);
+                kilit = 0; // Firtina sonrasi kilit acilir
                 break;
             }
 
-            case 'h': case 'H': { // Hava kilidi (DO-WHILE)[span_20](start_span)[span_20](end_span)[span_21](start_span)[span_21](end_span)[span_22](start_span)[span_22](end_span)
-                if (kilit == 1 || enerji < 15) { printf("Kilit zaten kapali veya enerji yetersiz.\n"); break; }
-                char sifre = 'A' + (gun % 26); // Gune gore sifre[span_23](start_span)[span_23](end_span)
-                char tahmin;
-                int hak = 3, bildi = 0;
-                turSay = 1;
-
-                printf("Ipucu: A harfinden gun sayisi (%d) kadar ilerideki harf.\n", gun);
-                do {
-                    printf("Sifre (Hak %d): ", hak);
-                    scanf(" %c", &tahmin);
-                    if (tahmin >= 'a' && tahmin <= 'z') tahmin -= 32;
-
-                    if (tahmin == sifre) bildi = 1;
-                    else {
-                        hak--; enerji -= 5;
-                        printf(tahmin < sifre ? "Ileri git (-5 Enerji)\n" : "Geri git (-5 Enerji)\n");
-                    }
-                } while (!bildi && hak > 0); // Tek kosullu kontrol[span_24](start_span)[span_24](end_span)
-
-                if (bildi) { kilit = 1; printf("Kilit muhurlendi!\n"); }
-                else { hasar += 20; printf("Basarisiz (+20 Hasar)!\n"); }
+            case 'U': // Dinlenme
+                enerji += 25;
+                if (enerji > 100) enerji = 100;
+                can += 10;
+                if (can > 100) can = 100;
+                turGecti = 1;
+                printf("Dinlenildi. +25 Enerji, +10 Can yenilendi.\n");
                 break;
+
+            case 'Q':
+                printf("Simulasyondan cikiliyor...\n");
+                break;
+
+            default:
+                printf("Gecersiz komut!\n");
+        }
+
+        // Tur sonu tuketim ve kontrol
+        if (turGecti && komut != 'Q') {
+            o2 -= 5;
+            su -= 1;
+            if (hasar >= 50) {
+                can -= 5;
+                printf("Uyari: Yuksek hasar nedeniyle -5 Can kaybi!\n");
             }
-
-            case 'q': case 'Q': oyun = 0; break;
-            default: printf("Tanimsiz komut!\n"); // Tur harcamaz[span_25](start_span)[span_25](end_span)
+            gun++;
         }
 
-        // 0-100 Sinirlandirma[span_26](start_span)[span_26](end_span)
-        if (can > 100) can = 100; if (can < 0) can = 0;
-        if (enerji > 100) enerji = 100; if (enerji < 0) enerji = 0;
-        if (o2 > 100) o2 = 100; if (o2 < 0) o2 = 0;
-        if (hasar > 100) hasar = 100; if (hasar < 0) hasar = 0;
-
-        // Gun gecisi (Her 3 turda 1 gun)[span_27](start_span)[span_27](end_span)
-        if (oyun && turSay) {
-            tur++;
-            if (tur % 3 == 0) {
-                gun++;
-                if (gun <= 15) {
-                    o2 -= 8;
-                    if (hasar > 70) can -= 5;
-                    if (o2 < 0) o2 = 0; if (can < 0) can = 0;
-                    printf("--- %d. GUNE GECILDI (-8 O2) ---\n", gun);
-                }
-            }
+        if (can <= 0 || o2 <= 0 || su <= 0 || enerji <= 0) {
+            printf("\nKAYNAKLAR TUKENDI! Koloni hayatta kalamadi.\n");
+            break;
         }
 
-        // Oyun sonu kontrolu[span_28](start_span)[span_28](end_span)
-        if (oyun && (can <= 0 || o2 <= 0)) {
-            printf("\nKAYBETTINIZ!\n"); oyun = 0;
-        } else if (oyun && gun > 15) {
-            gun = 15; printf("\nKAZANDINIZ! Kurtarma ekibi geldi.\n"); oyun = 0;
+        if (gun > 7) {
+            printf("\nTEBRIKLER! 7 gun boyunca koloniyi hayatta tuttunuz!\n");
+            break;
         }
 
-    } while (oyun);
+    } while (komut != 'Q');
 
-    // Sonuc raporu[span_29](start_span)[span_29](end_span)
-    int puan = (gun * 100) + can + o2 - hasar;
-    printf("\n=== SONUC ===\nGun:%d Tur:%d Can:%d O2:%d Hasar:%d | PUAN: %d\n",
-           gun, tur, can, o2, hasar, puan);
+    int puan = (can * 2) + (o2 * 2) + (su * 5) + (parca * 10) - hasar;
+    if (puan < 0) puan = 0;
+
+    printf("\n=== OYUN SONU RAPORU ===\n");
+    printf("Hayatta Kalinan Gun: %d | Kalan Can: %d | Kalan O2: %d | Kalan Su: %d\n", gun - 1, can, o2, su);
+    printf("Toplam Hayatta Kalma Puani: %d\n", puan);
 
     return 0;
 }
-
-    
-            
-            
